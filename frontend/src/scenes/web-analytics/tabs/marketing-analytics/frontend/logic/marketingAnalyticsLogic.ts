@@ -737,7 +737,7 @@ export interface marketingAnalyticsLogicMeta {
             loading: boolean,
             dataWarehouseTables: DatabaseSchemaDataWarehouseTable[]
         ) => boolean
-        hasSyncedMarketingSources: (validExternalTables: ExternalTable[], nativeSources: NativeSource[]) => boolean
+        hasSyncedMarketingSources: (validExternalTables: ExternalTable[], validNativeSources: NativeSource[]) => boolean
         hasSources: (validExternalTables: ExternalTable[], validNativeSources: NativeSource[]) => boolean
         allExternalTablesWithStatus: (
             externalTables: ExternalTable[],

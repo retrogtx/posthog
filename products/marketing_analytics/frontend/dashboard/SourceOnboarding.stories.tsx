@@ -492,7 +492,7 @@ AdPerformanceDataAvailable.parameters = { ...AdPerformanceWithoutSources.paramet
 AdPerformanceDataAvailable.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
     const canvas = within(canvasElement)
     await expect(canvas.findByText('1 suggested connection')).resolves.toBeVisible()
-    await expect(canvas.findByText('Total clicks')).resolves.toBeVisible()
+    await expect(canvas.findByText('Total Clicks')).resolves.toBeVisible()
     expect(canvas.queryByText('Checking your connections')).not.toBeInTheDocument()
 }
 
@@ -549,7 +549,7 @@ DashboardWithAdsSyncingWithoutSearchConsole.parameters = DashboardWithAdsOnly.pa
 
 DashboardWithAdsOnly.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
     const canvas = within(canvasElement)
-    await expect(canvas.findByText('Total clicks')).resolves.toBeVisible()
+    await expect(canvas.findByText('Total Clicks')).resolves.toBeVisible()
     await expect(canvas.findByText('Connect Google Search Console')).resolves.toBeVisible()
     expect(canvas.getAllByRole('heading', { name: /^Search performance$/ })).toHaveLength(1)
     expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
@@ -562,7 +562,7 @@ DashboardWithAdsSyncingWithoutSearchConsole.play = async ({
 }): Promise<void> => {
     const canvas = within(canvasElement)
     await expect(canvas.findByText('Your connections are getting ready')).resolves.toBeVisible()
-    expect(canvas.queryByText('Total clicks')).not.toBeInTheDocument()
+    expect(canvas.queryByText('Total Clicks')).not.toBeInTheDocument()
     expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
 }
 
