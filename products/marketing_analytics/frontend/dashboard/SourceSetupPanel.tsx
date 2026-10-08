@@ -64,12 +64,12 @@ export function SourceSetupPanel({
             : state === 'scanning'
               ? 'Checking campaign tracking in events from the last 7 days.'
               : state === 'empty'
-                ? 'No ad platforms were detected in events from the last 7 days. You can choose an integration manually to import spend data.'
+                ? 'No ad platforms were detected in your latest 7-day event scan. You can choose an integration manually to import spend data.'
                 : state === 'error'
                   ? 'Try checking your events again, or choose an integration manually.'
                   : state === 'waiting'
                     ? 'Spend and ad performance will appear after the first sync finishes. You can connect other platforms while you wait.'
-                    : `We found campaign tracking from ${suggestions.length} ${suggestions.length === 1 ? 'platform' : 'platforms'} in your recent events.`
+                    : `We found campaign tracking from ${suggestions.length} ${suggestions.length === 1 ? 'platform' : 'platforms'} in your latest event scan.`
 
     return (
         <LemonCard
@@ -79,7 +79,9 @@ export function SourceSetupPanel({
             }
         >
             <div className={compact ? 'p-4 space-y-3' : 'p-6 space-y-5'}>
-                {(state === 'scanning' || state === 'suggestions') && <LemonTag type="muted">Last 7 days</LemonTag>}
+                {(state === 'scanning' || state === 'suggestions') && (
+                    <LemonTag type="muted">7-day event scan</LemonTag>
+                )}
                 <div className="flex items-start gap-4" role={busy ? 'status' : undefined}>
                     {busy ? <Spinner className="mt-1 shrink-0" /> : null}
                     <div className="min-w-0 flex-1">
@@ -207,7 +209,7 @@ export function SourceSetupPanel({
                         <span>Spend data appears after the first sync finishes.</span>
                     </div>
                 )}
-                {state === 'waiting' && (
+                {state === 'waiting' && connections.some((connection) => connection.status !== 'Needs attention') && (
                     <div className="flex items-start gap-2 text-secondary text-sm">
                         <IconCheckCircle className="shrink-0 mt-0.5" />
                         <span>You can leave this page. Your import will continue in the background.</span>

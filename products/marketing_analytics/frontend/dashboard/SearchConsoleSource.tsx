@@ -1,7 +1,7 @@
 import { useValues } from 'kea'
 
 import * as magnifyingGlass from '@posthog/brand/hoggies/png/magnifying-glass'
-import { LemonButton, LemonCard, LemonTag } from '@posthog/lemon-ui'
+import { LemonButton, LemonCard, LemonTag, Spinner } from '@posthog/lemon-ui'
 
 import { pngHoggie } from 'lib/brand/hoggies'
 import { RestrictionScope, useRestrictedArea } from 'lib/components/RestrictedArea'
@@ -23,6 +23,22 @@ export function SearchConsoleSource(): JSX.Element | null {
     })
     if (!featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS]) {
         return null
+    }
+    if (!dataWarehouseSources) {
+        return (
+            <section className="max-w-3xl w-full mx-auto mt-8 mb-6">
+                <h2 className="mb-4">Search performance</h2>
+                <LemonCard hoverEffect={false}>
+                    <div className="flex items-start gap-4" role="status">
+                        <Spinner className="mt-1 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                            <h3 className="mb-2">Checking your search connections</h3>
+                            <p className="text-secondary mb-0">Looking for connected search sources.</p>
+                        </div>
+                    </div>
+                </LemonCard>
+            </section>
+        )
     }
     const sources = [
         { type: 'GoogleAds', name: 'Google Ads' },

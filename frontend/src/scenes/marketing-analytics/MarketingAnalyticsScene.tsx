@@ -145,7 +145,9 @@ const MarketingAnalyticsDashboard = (): JSX.Element => {
     if (loading && !dataWarehouseSources) {
         return (
             <>
+                <h2 className="max-w-3xl w-full mx-auto mt-6 mb-0">Ad performance</h2>
                 <SourceSetupPanel state="checking" />
+                <SearchConsoleSource />
             </>
         )
     }

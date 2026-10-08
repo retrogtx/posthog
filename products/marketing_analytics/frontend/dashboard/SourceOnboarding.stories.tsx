@@ -149,89 +149,98 @@ function useDashboardWithoutSourcesMocks(
     scanFailed = false,
     dataReady = false,
     searchConsoleState?: 'ready' | 'syncing',
-    paidState?: 'ready' | 'syncing'
+    paidState?: 'ready' | 'syncing',
+    pending: { scan?: boolean; connections?: boolean } = {}
 ): void {
     useStorybookMocks({
         get: {
             '/api/projects/:team_id/marketing_analytics/setup_plan/': () =>
-                scanFailed ? [500, { detail: 'Could not scan events.' }] : [200, { ...plan, suggestions }],
-            '/api/environments/:team_id/external_data_sources/': () => [
-                200,
-                {
-                    results: [
-                        ...(paidState
-                            ? [
-                                  {
-                                      id: 'demo-google-ads',
-                                      source_type: 'GoogleAds',
-                                      status: paidState === 'ready' ? 'Completed' : 'Running',
-                                      schemas: [
-                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
-                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
-                                          'keyword',
-                                          'keyword_stats',
-                                          'landing_page_stats',
-                                      ].map((name) => ({
-                                          id: `demo-${name}`,
-                                          name,
-                                          should_sync: true,
-                                          status: paidState === 'ready' ? 'Completed' : 'Running',
-                                          last_synced_at: paidState === 'ready' ? '2026-09-16T09:00:00Z' : null,
-                                          table:
-                                              paidState === 'ready'
-                                                  ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
-                                                  : null,
-                                      })),
-                                  },
-                              ]
-                            : []),
-                        ...(searchConsoleState
-                            ? [
-                                  {
-                                      id: 'demo-search-console',
-                                      source_type: 'GoogleSearchConsole',
-                                      status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
-                                      schemas: [
-                                          'search_analytics_by_query',
-                                          'search_analytics_by_page',
-                                          'search_analytics_by_query_page',
-                                      ].map((name) => ({
-                                          id: `demo-${name}`,
-                                          name,
-                                          should_sync: true,
-                                          status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
-                                          last_synced_at:
-                                              searchConsoleState === 'ready' ? '2026-09-16T09:00:00Z' : null,
-                                          table:
-                                              searchConsoleState === 'ready'
-                                                  ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
-                                                  : null,
-                                      })),
-                                  },
-                              ]
-                            : []),
-                        ...(!paidState && !searchConsoleState && dataReady
-                            ? [
-                                  {
-                                      id: 'demo-google-ready',
-                                      source_type: 'GoogleAds',
-                                      status: 'Completed',
-                                      schemas: [
-                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
-                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
-                                      ].map((name) => ({
-                                          id: `demo-${name}`,
-                                          name,
-                                          should_sync: true,
-                                          status: 'Completed',
-                                          last_synced_at: '2026-09-16T09:00:00Z',
-                                      })),
-                                  },
-                              ]
-                            : []),
-                    ],
-                },
-            ],
+                pending.scan
+                    ? new Promise(() => {})
+                    : scanFailed
+                      ? [500, { detail: 'Could not scan events.' }]
+                      : [200, { ...plan, suggestions }],
+            '/api/environments/:team_id/external_data_sources/': () =>
+                pending.connections
+                    ? new Promise(() => {})
+                    : [
+                          200,
+                          {
+                              results: [
+                                  ...(paidState
+                                      ? [
+                                            {
+                                                id: 'demo-google-ads',
+                                                source_type: 'GoogleAds',
+                                                status: paidState === 'ready' ? 'Completed' : 'Running',
+                                                schemas: [
+                                                    MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
+                                                    MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
+                                                    'keyword',
+                                                    'keyword_stats',
+                                                    'landing_page_stats',
+                                                ].map((name) => ({
+                                                    id: `demo-${name}`,
+                                                    name,
+                                                    should_sync: true,
+                                                    status: paidState === 'ready' ? 'Completed' : 'Running',
+                                                    last_synced_at:
+                                                        paidState === 'ready' ? '2026-09-16T09:00:00Z' : null,
+                                                    table:
+                                                        paidState === 'ready'
+                                                            ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
+                                                            : null,
+                                                })),
+                                            },
+                                        ]
+                                      : []),
+                                  ...(searchConsoleState
+                                      ? [
+                                            {
+                                                id: 'demo-search-console',
+                                                source_type: 'GoogleSearchConsole',
+                                                status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
+                                                schemas: [
+                                                    'search_analytics_by_query',
+                                                    'search_analytics_by_page',
+                                                    'search_analytics_by_query_page',
+                                                ].map((name) => ({
+                                                    id: `demo-${name}`,
+                                                    name,
+                                                    should_sync: true,
+                                                    status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
+                                                    last_synced_at:
+                                                        searchConsoleState === 'ready' ? '2026-09-16T09:00:00Z' : null,
+                                                    table:
+                                                        searchConsoleState === 'ready'
+                                                            ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
+                                                            : null,
+                                                })),
+                                            },
+                                        ]
+                                      : []),
+                                  ...(!paidState && !searchConsoleState && dataReady
+                                      ? [
+                                            {
+                                                id: 'demo-google-ready',
+                                                source_type: 'GoogleAds',
+                                                status: 'Completed',
+                                                schemas: [
+                                                    MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
+                                                    MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
+                                                ].map((name) => ({
+                                                    id: `demo-${name}`,
+                                                    name,
+                                                    should_sync: true,
+                                                    status: 'Completed',
+                                                    last_synced_at: '2026-09-16T09:00:00Z',
+                                                })),
+                                            },
+                                        ]
+                                      : []),
+                              ],
+                          },
+                      ],
             '/api/projects/:team_id/marketing_analytics/source_validation/': () => [200, { errors_by_source: {} }],
             '/api/projects/:team_id/marketing_analytics/utm_audit/': () => [
                 200,
@@ -562,3 +571,67 @@ export function DashboardWithAdsAndSearchConsole(): JSX.Element {
     return <MarketingAnalyticsScene />
 }
 DashboardWithAdsAndSearchConsole.parameters = DashboardWithAdsOnly.parameters
+
+export function DashboardCheckingConnectionsWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, false, undefined, undefined, { connections: true })
+    return <MarketingAnalyticsScene />
+}
+DashboardCheckingConnectionsWithSearch.parameters = {
+    ...DashboardWithSearchConsoleOnly.parameters,
+    testOptions: { waitForLoadersToDisappear: false },
+}
+DashboardCheckingConnectionsWithSearch.play = async ({
+    canvasElement,
+}: {
+    canvasElement: HTMLElement
+}): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Checking your connections')).resolves.toBeVisible()
+    await expect(canvas.findByText('Checking your search connections')).resolves.toBeVisible()
+    expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
+}
+
+export function DashboardScanningWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, false, undefined, undefined, { scan: true })
+    return <MarketingAnalyticsScene />
+}
+DashboardScanningWithSearch.parameters = DashboardCheckingConnectionsWithSearch.parameters
+DashboardScanningWithSearch.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Finding your ad platforms')).resolves.toBeVisible()
+    await expect(canvas.findByText('Connect your search sources')).resolves.toBeVisible()
+}
+
+export function DashboardScanningWithSearchConsole(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, false, 'ready', undefined, { scan: true })
+    return <MarketingAnalyticsScene />
+}
+DashboardScanningWithSearchConsole.parameters = DashboardCheckingConnectionsWithSearch.parameters
+DashboardScanningWithSearchConsole.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Finding your ad platforms')).resolves.toBeVisible()
+    await expect(canvas.findByText('example analytics')).resolves.toBeVisible()
+    expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
+}
+
+export function DashboardScanFailedWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], true)
+    return <MarketingAnalyticsScene />
+}
+DashboardScanFailedWithSearch.parameters = DashboardWithSearchConsoleOnly.parameters
+DashboardScanFailedWithSearch.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Could not check your events')).resolves.toBeVisible()
+    await expect(canvas.findByText('Connect your search sources')).resolves.toBeVisible()
+}
+
+export function DashboardNoDetectionsWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks()
+    return <MarketingAnalyticsScene />
+}
+DashboardNoDetectionsWithSearch.parameters = DashboardWithSearchConsoleOnly.parameters
+DashboardNoDetectionsWithSearch.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Choose an ad platform')).resolves.toBeVisible()
+    await expect(canvas.findByText('Connect your search sources')).resolves.toBeVisible()
+}

@@ -66,7 +66,7 @@ export function Onboarding({ completeOnboarding }: { completeOnboarding: () => v
                     rescanDisabledReason={sourceScanDisabledReason}
                 />
             )}
-            {(!setupPlanLoading || setupPlan) && <SearchConsoleSource />}
+            <SearchConsoleSource />
         </div>
     )
 }
