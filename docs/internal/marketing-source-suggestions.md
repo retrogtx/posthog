@@ -37,6 +37,16 @@ The current import provides spend, clicks, and impressions; platform-reported co
 PostHog conversion goals still work through campaign attribution.
 Ad-level reporting is unavailable because the connector does not import promoted-post statistics.
 
+## Search performance
+
+Keywords and queries includes paid keywords from ad platforms and organic queries from Google Search Console.
+Search Console requires a synced `search_analytics_by_query` or `search_analytics_by_query_page` table; the integration and paid/organic filters determine which sources appear.
+Each search table has a reload control and query duration.
+Pagination stays within the table without scrolling the scene, and changing between keywords and landing pages starts on page 1.
+Tables with more than ten results reserve consistent space for values and comparisons and keep room for ten rows on shorter pages.
+Tables with ten results or fewer keep their compact layout without reserved space.
+Use the page selector to jump directly to a page, or the arrows to move one page at a time.
+
 ## Bing Ads landing pages
 
 Search performance includes Bing Ads in the Landing pages view.
@@ -122,3 +132,9 @@ Storybook covers Search Console without ads and ads without Search Console, with
 
 A connected Google Ads or Bing Ads source shows Search performance below the ad metrics or first-sync panel.
 The full search connection card appears only when no search source is connected, so a paid-only project does not repeat Search performance above its ad metrics.
+
+## Google Ads campaign trends
+
+Campaign trend charts accept both `campaign_overview_stats` and the legacy `campaign_stats` schema.
+The current schema takes precedence when both are available.
+Table resolution uses schema metadata when available and otherwise recognizes source and custom table-name prefixes.
