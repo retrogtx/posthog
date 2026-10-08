@@ -179,7 +179,9 @@ const MarketingAnalyticsDashboard = (): JSX.Element => {
                 Ad performance
             </h2>
             <DetectedSources compact={hasSearchConsole && !hasSyncedMarketingSources} />
-            {!hasSearchConsole && <SearchConsoleSource />}
+            {!dataWarehouseSources?.results.some((source) =>
+                ['GoogleAds', 'BingAds', 'GoogleSearchConsole'].includes(source.source_type)
+            ) && <SearchConsoleSource />}
             {hasSources && hasSyncedMarketingSources && (
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-x-4 gap-y-12">
                     {marketingTiles?.map((tile, i) => (

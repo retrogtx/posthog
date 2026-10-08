@@ -148,7 +148,8 @@ function useDashboardWithoutSourcesMocks(
     suggestions: SuggestionApi[] = [],
     scanFailed = false,
     dataReady = false,
-    searchConsoleState?: 'ready' | 'syncing'
+    searchConsoleState?: 'ready' | 'syncing',
+    paidState?: 'ready' | 'syncing'
 ): void {
     useStorybookMocks({
         get: {
@@ -157,48 +158,78 @@ function useDashboardWithoutSourcesMocks(
             '/api/environments/:team_id/external_data_sources/': () => [
                 200,
                 {
-                    results: searchConsoleState
-                        ? [
-                              {
-                                  id: 'demo-search-console',
-                                  source_type: 'GoogleSearchConsole',
-                                  status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
-                                  schemas: [
-                                      'search_analytics_by_query',
-                                      'search_analytics_by_page',
-                                      'search_analytics_by_query_page',
-                                  ].map((name) => ({
-                                      id: `demo-${name}`,
-                                      name,
-                                      should_sync: true,
+                    results: [
+                        ...(paidState
+                            ? [
+                                  {
+                                      id: 'demo-google-ads',
+                                      source_type: 'GoogleAds',
+                                      status: paidState === 'ready' ? 'Completed' : 'Running',
+                                      schemas: [
+                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
+                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
+                                          'keyword',
+                                          'keyword_stats',
+                                          'landing_page_stats',
+                                      ].map((name) => ({
+                                          id: `demo-${name}`,
+                                          name,
+                                          should_sync: true,
+                                          status: paidState === 'ready' ? 'Completed' : 'Running',
+                                          last_synced_at: paidState === 'ready' ? '2026-09-16T09:00:00Z' : null,
+                                          table:
+                                              paidState === 'ready'
+                                                  ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
+                                                  : null,
+                                      })),
+                                  },
+                              ]
+                            : []),
+                        ...(searchConsoleState
+                            ? [
+                                  {
+                                      id: 'demo-search-console',
+                                      source_type: 'GoogleSearchConsole',
                                       status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
-                                      last_synced_at: searchConsoleState === 'ready' ? '2026-09-16T09:00:00Z' : null,
-                                      table:
-                                          searchConsoleState === 'ready'
-                                              ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
-                                              : null,
-                                  })),
-                              },
-                          ]
-                        : dataReady
-                          ? [
-                                {
-                                    id: 'demo-google-ready',
-                                    source_type: 'GoogleAds',
-                                    status: 'Completed',
-                                    schemas: [
-                                        MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
-                                        MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
-                                    ].map((name) => ({
-                                        id: `demo-${name}`,
-                                        name,
-                                        should_sync: true,
-                                        status: 'Completed',
-                                        last_synced_at: '2026-09-16T09:00:00Z',
-                                    })),
-                                },
-                            ]
-                          : [],
+                                      schemas: [
+                                          'search_analytics_by_query',
+                                          'search_analytics_by_page',
+                                          'search_analytics_by_query_page',
+                                      ].map((name) => ({
+                                          id: `demo-${name}`,
+                                          name,
+                                          should_sync: true,
+                                          status: searchConsoleState === 'ready' ? 'Completed' : 'Running',
+                                          last_synced_at:
+                                              searchConsoleState === 'ready' ? '2026-09-16T09:00:00Z' : null,
+                                          table:
+                                              searchConsoleState === 'ready'
+                                                  ? { name: `demo_${name}`, hogql_name: `demo_${name}` }
+                                                  : null,
+                                      })),
+                                  },
+                              ]
+                            : []),
+                        ...(!paidState && !searchConsoleState && dataReady
+                            ? [
+                                  {
+                                      id: 'demo-google-ready',
+                                      source_type: 'GoogleAds',
+                                      status: 'Completed',
+                                      schemas: [
+                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.campaignTableName,
+                                          MARKETING_INTEGRATION_CONFIGS.GoogleAds.statsTableName,
+                                      ].map((name) => ({
+                                          id: `demo-${name}`,
+                                          name,
+                                          should_sync: true,
+                                          status: 'Completed',
+                                          last_synced_at: '2026-09-16T09:00:00Z',
+                                      })),
+                                  },
+                              ]
+                            : []),
+                    ],
                 },
             ],
             '/api/projects/:team_id/marketing_analytics/source_validation/': () => [200, { errors_by_source: {} }],
@@ -217,25 +248,46 @@ function useDashboardWithoutSourcesMocks(
         post: {
             '/api/environments/:team_id/query/:kind/': async ({ request }) => {
                 const { query } = (await request.json()) as { query: { kind: string } }
-                if (query.kind === NodeKind.MarketingAnalyticsSearchQuery && searchConsoleState === 'ready') {
+                if (
+                    query.kind === NodeKind.MarketingAnalyticsSearchQuery &&
+                    (searchConsoleState === 'ready' || paidState === 'ready')
+                ) {
                     return [
                         200,
                         {
                             results: [
                                 {
                                     keyword: 'example analytics',
-                                    platform: 'GoogleSearchConsole',
-                                    matchType: null,
-                                    currency: null,
+                                    platform: paidState ? 'GoogleAds' : 'GoogleSearchConsole',
+                                    matchType: paidState ? 'exact' : null,
+                                    currency: paidState ? 'USD' : null,
                                     clicks: 240,
                                     impressions: 6000,
                                     ctr: 0.04,
-                                    position: 3.2,
-                                    cost: null,
-                                    conversions: null,
-                                    cpc: null,
-                                    cpa: null,
+                                    position: paidState ? null : 3.2,
+                                    cost: paidState ? 120 : null,
+                                    conversions: paidState ? 12 : null,
+                                    cpc: paidState ? 0.5 : null,
+                                    cpa: paidState ? 10 : null,
                                 },
+                                ...(paidState && searchConsoleState === 'ready'
+                                    ? [
+                                          {
+                                              keyword: 'example organic analytics',
+                                              platform: 'GoogleSearchConsole',
+                                              matchType: null,
+                                              currency: null,
+                                              clicks: 180,
+                                              impressions: 5000,
+                                              ctr: 0.036,
+                                              position: 4.2,
+                                              cost: null,
+                                              conversions: null,
+                                              cpc: null,
+                                              cpa: null,
+                                          },
+                                      ]
+                                    : []),
                             ],
                         },
                     ]
@@ -473,3 +525,40 @@ export function DashboardWithSearchConsoleSyncing(): JSX.Element {
     return <MarketingAnalyticsScene />
 }
 DashboardWithSearchConsoleSyncing.parameters = DashboardWithSearchConsoleOnly.parameters
+
+export function DashboardWithAdsOnly(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, true, undefined, 'ready')
+    return <MarketingAnalyticsScene />
+}
+DashboardWithAdsOnly.parameters = { ...DashboardWithSearchConsoleOnly.parameters, mockDate: '2026-09-16' }
+
+export function DashboardWithAdsSyncingWithoutSearchConsole(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, false, undefined, 'syncing')
+    return <MarketingAnalyticsScene />
+}
+DashboardWithAdsSyncingWithoutSearchConsole.parameters = DashboardWithAdsOnly.parameters
+
+DashboardWithAdsOnly.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Total clicks')).resolves.toBeVisible()
+    await expect(canvas.findByText('Connect Google Search Console')).resolves.toBeVisible()
+    expect(canvas.getAllByRole('heading', { name: /^Search performance$/ })).toHaveLength(1)
+    expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
+}
+
+DashboardWithAdsSyncingWithoutSearchConsole.play = async ({
+    canvasElement,
+}: {
+    canvasElement: HTMLElement
+}): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Your connections are getting ready')).resolves.toBeVisible()
+    expect(canvas.queryByText('Total clicks')).not.toBeInTheDocument()
+    expect(canvas.queryByText('Connect your search sources')).not.toBeInTheDocument()
+}
+
+export function DashboardWithAdsAndSearchConsole(): JSX.Element {
+    useDashboardWithoutSourcesMocks([], false, true, 'ready', 'ready')
+    return <MarketingAnalyticsScene />
+}
+DashboardWithAdsAndSearchConsole.parameters = DashboardWithAdsOnly.parameters

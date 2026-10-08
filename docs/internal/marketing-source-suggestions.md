@@ -55,8 +55,8 @@ Use **Scan events again** in Setup → Sources to bypass the event cache.
 The dashboard keeps pending source suggestions and sync status visible so missing spend data is not mistaken for zero spend.
 Conversion goals are configured within the product rather than as an onboarding step.
 
-The source onboarding shows only the scan while it runs, then only the detected platforms.
-**Skip and add manually** opens the complete source selector at any time, including while the scan runs.
+The source onboarding shows scan progress while it runs, then detected platforms and their connection benefits.
+**Browse integrations** opens the complete source selector without leaving the dashboard.
 The scan message states its seven-day detection window.
 
 On the current dashboard, spend and ad performance tiles stay hidden until a source supplies data.
@@ -116,3 +116,9 @@ The separate Ad performance tab is available only with `new-marketing-analytics-
 Enabling Search performance alone keeps paid and organic reporting inside the current Dashboard tab.
 
 Detected-source suggestions keep the money hedgehog in the header, matching the empty state and manual catalog.
+
+Resolved ad-source panels retain the money hedgehog while connections wait or sync, including the compact panel above organic search.
+Storybook covers Search Console without ads and ads without Search Console, with ready and first-sync variants.
+
+A connected Google Ads or Bing Ads source shows Search performance below the ad metrics or first-sync panel.
+The full search connection card appears only when no search source is connected, so a paid-only project does not repeat Search performance above its ad metrics.

@@ -54,12 +54,7 @@ const suggestions = ['GoogleAds', 'MetaAds'].map((kind) => ({
     spend_at_risk: 0,
     event_volume: 12,
 }))
-const footer = (
-    <>
-        <LemonButton>Skip and add manually</LemonButton>
-        <LemonButton type="secondary">Continue to dashboard</LemonButton>
-    </>
-)
+const footer = <LemonButton>Browse integrations</LemonButton>
 export const Checking: Story = { args: { state: 'checking' } }
 export const Scanning: Story = { args: { state: 'scanning', footer } }
 export const DetectedPlatforms: Story = { args: { state: 'suggestions', suggestions, footer } }
