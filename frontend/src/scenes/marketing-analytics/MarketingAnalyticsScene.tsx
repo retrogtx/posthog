@@ -3,7 +3,7 @@ import { BindLogic, useActions, useValues } from 'kea'
 import { useEffect } from 'react'
 
 import { IconGear, IconSparkles } from '@posthog/icons'
-import { LemonBanner, LemonButton, LemonSwitch, LemonTabs, Link } from '@posthog/lemon-ui'
+import { LemonBanner, LemonButton, LemonSwitch, LemonTabs, Spinner, Link } from '@posthog/lemon-ui'
 
 import { FEATURE_FLAGS } from 'lib/constants'
 import { featureFlagLogic } from 'lib/logic/featureFlagLogic'
@@ -146,7 +146,13 @@ const MarketingAnalyticsDashboard = (): JSX.Element => {
         return (
             <>
                 <h2 className="max-w-3xl w-full mx-auto mt-6 mb-0">Ad performance</h2>
-                <SourceSetupPanel state="checking" />
+                {featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING] ? (
+                    <SourceSetupPanel state="checking" />
+                ) : (
+                    <div className="flex justify-center p-8">
+                        <Spinner />
+                    </div>
+                )}
                 <SearchConsoleSource />
             </>
         )

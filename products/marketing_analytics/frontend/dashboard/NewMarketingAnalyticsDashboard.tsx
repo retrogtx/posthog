@@ -6,7 +6,9 @@ import { LemonBanner, LemonButton, LemonCard, LemonCollapse, LemonSelect, LemonS
 
 import { CompareFilter } from 'lib/components/CompareFilter/CompareFilter'
 import { DateFilter } from 'lib/components/DateFilter/DateFilter'
+import { FEATURE_FLAGS } from 'lib/constants'
 import { useLocalStorage } from 'lib/hooks/useLocalStorage'
+import { featureFlagLogic } from 'lib/logic/featureFlagLogic'
 import { marketingOnboardingLogic } from 'scenes/marketing-analytics/Onboarding/marketingOnboardingLogic'
 import { Onboarding } from 'scenes/marketing-analytics/Onboarding/Onboarding'
 import { suggestionsForSection } from 'scenes/marketing-analytics/Setup/sectionRouting'
@@ -113,9 +115,12 @@ export function NewMarketingAnalyticsDashboard(): JSX.Element {
     const { setDates, setCompareFilter, openSetup, reportDashboardSectionViewed, reportDashboardControlUsed } =
         useActions(marketingAnalyticsLogic)
     const { setupPlan, setupPlanLoading, visibleSuggestions } = useValues(setupPlanLogic)
+    const { featureFlags } = useValues(featureFlagLogic)
     const { loadSetupPlan, reviewSuggestion } = useActions(setupPlanLogic)
     const [sourcesExpanded, setSourcesExpanded] = useLocalStorage('marketing-source-suggestions-expanded', false)
-    const sourceSuggestions = visibleSuggestions.filter((suggestion) => suggestion.kind === 'connect_source')
+    const sourceSuggestions = featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING]
+        ? visibleSuggestions.filter((suggestion) => suggestion.kind === 'connect_source')
+        : []
     const reviewSources = (): void => openSetup(SetupSection.SOURCES, 'dashboard_source_suggestions')
 
     const [goalsExpanded, setGoalsExpanded] = useLocalStorage('marketing-goal-suggestions-expanded', false)
@@ -124,11 +129,16 @@ export function NewMarketingAnalyticsDashboard(): JSX.Element {
 
     const requestedSetupPlan = useRef(false)
     useEffect(() => {
-        if (!setupPlan && !setupPlanLoading && !requestedSetupPlan.current) {
+        if (
+            featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING] &&
+            !setupPlan &&
+            !setupPlanLoading &&
+            !requestedSetupPlan.current
+        ) {
             requestedSetupPlan.current = true
             loadSetupPlan()
         }
-    }, [setupPlan, setupPlanLoading, loadSetupPlan])
+    }, [featureFlags, setupPlan, setupPlanLoading, loadSetupPlan])
 
     const reportedSection = useRef<string | null>(null)
     useEffect(() => {

@@ -156,11 +156,11 @@ class TestSetupPlanFeatureFlag(APIBaseTest):
     @parameterized.expand(
         [(False, False, False), (False, False, True), (False, True, False), (True, False, False), (True, True, True)]
     )
-    def test_setup_availability(self, setup: bool, dashboard: bool, marketing: bool) -> None:
+    def test_setup_availability(self, setup: bool, dashboard: bool, onboarding: bool) -> None:
         flags = {
             "marketing-analytics-setup": setup,
             "new-marketing-analytics-dashboard": dashboard,
-            "marketing-analytics": marketing,
+            "marketing-analytics-source-onboarding": onboarding,
         }
         with (
             patch(_FLAG_TARGET, side_effect=lambda flag, *args, **kwargs: flags[flag]),
@@ -168,8 +168,18 @@ class TestSetupPlanFeatureFlag(APIBaseTest):
         ):
             response = self.client.get(self.url)
 
-        assert response.status_code == (200 if setup or dashboard or marketing else 404)
-        assert build.call_count == int(setup or dashboard or marketing)
+        assert response.status_code == (200 if setup or dashboard or onboarding else 404)
+        assert build.call_count == int(setup or dashboard or onboarding)
+
+    def test_marketing_access_does_not_enable_source_onboarding(self) -> None:
+        with (
+            patch(_FLAG_TARGET, side_effect=lambda flag, *args, **kwargs: flag == "marketing-analytics"),
+            patch(_PLAN_TARGET) as build,
+        ):
+            response = self.client.get(self.url)
+
+        assert response.status_code == 404
+        build.assert_not_called()
 
     def test_the_flag_is_evaluated_once_per_request(self):
         # A second call in the same request would fire a redundant `$feature_flag_called`.

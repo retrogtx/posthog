@@ -1,6 +1,8 @@
 import { useActions, useValues } from 'kea'
 
+import { FEATURE_FLAGS } from 'lib/constants'
 import { useOnMountEffect } from 'lib/hooks/useOnMountEffect'
+import { featureFlagLogic } from 'lib/logic/featureFlagLogic'
 import { eventUsageLogic } from 'lib/utils/eventUsageLogic'
 import { teamLogic } from 'scenes/teamLogic'
 
@@ -27,6 +29,8 @@ export function Onboarding({ completeOnboarding }: { completeOnboarding: () => v
     const { showManualSources } = useValues(marketingOnboardingLogic)
     const { setShowManualSources } = useActions(marketingOnboardingLogic)
     const { hasSources } = useValues(marketingAnalyticsLogic)
+    const { featureFlags } = useValues(featureFlagLogic)
+    const sourceOnboardingEnabled = !!featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING]
 
     useOnMountEffect(() => {
         reportMarketingAnalyticsOnboardingViewed()
@@ -45,11 +49,11 @@ export function Onboarding({ completeOnboarding }: { completeOnboarding: () => v
     return (
         <div className="space-y-4">
             <MarketingAnalyticsSourceStatusBanner />
-            {showManualSources ? (
+            {!sourceOnboardingEnabled || showManualSources ? (
                 <AddSourceStep
                     onContinue={handleComplete}
                     hasSources={hasSources}
-                    onBack={() => setShowManualSources(false)}
+                    onBack={sourceOnboardingEnabled ? () => setShowManualSources(false) : undefined}
                 />
             ) : (
                 <SourceOnboardingScan

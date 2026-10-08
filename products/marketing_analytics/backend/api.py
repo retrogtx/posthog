@@ -128,7 +128,7 @@ def _setup_enabled(request: Request, team: Team, *, include_onboarding: bool = F
         for flag in (
             "marketing-analytics-setup",
             "new-marketing-analytics-dashboard",
-            *(("marketing-analytics",) if include_onboarding else ()),
+            *(("marketing-analytics-source-onboarding",) if include_onboarding else ()),
         )
     )
     setattr(request, cache_attribute, enabled)

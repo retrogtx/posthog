@@ -2,6 +2,8 @@ import { useActions, useValues } from 'kea'
 
 import { LemonButton } from '@posthog/lemon-ui'
 
+import { FEATURE_FLAGS } from 'lib/constants'
+import { featureFlagLogic } from 'lib/logic/featureFlagLogic'
 import { AddSourceStep } from 'scenes/marketing-analytics/Onboarding/AddSourceStep'
 import { marketingOnboardingLogic } from 'scenes/marketing-analytics/Onboarding/marketingOnboardingLogic'
 import { teamLogic } from 'scenes/teamLogic'
@@ -16,6 +18,7 @@ export function DetectedSources({ compact = false }: { compact?: boolean }): JSX
     const { visibleSuggestions, setupPlan, setupPlanLoading, sourceScanDisabledReason } = useValues(setupPlanLogic)
     const { rescanSources } = useActions(setupPlanLogic)
     const { currentTeamId } = useValues(teamLogic)
+    const { featureFlags } = useValues(featureFlagLogic)
     const { dismissedSourceIds, showIntegrations } = useValues(detectedSourcesLogic({ teamId: currentTeamId ?? 0 }))
     const { dismissSource, setShowIntegrations } = useActions(detectedSourcesLogic({ teamId: currentTeamId ?? 0 }))
     const { allAvailableSourcesWithStatus, nativeSources, hasSyncedMarketingSources, loading } =
@@ -48,6 +51,9 @@ export function DetectedSources({ compact = false }: { compact?: boolean }): JSX
     const openIntegrations = (): void => {
         setManualSourceSearch('')
         setShowIntegrations(true)
+    }
+    if (!featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING]) {
+        return hasSyncedMarketingSources ? null : <AddSourceStep hasSources={connections.length > 0} />
     }
     if (showIntegrations) {
         return (

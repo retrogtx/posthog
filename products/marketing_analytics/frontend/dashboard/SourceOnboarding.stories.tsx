@@ -66,7 +66,11 @@ const meta: Meta = {
     component: SourceOnboardingScan,
     parameters: {
         layout: 'padded',
-        featureFlags: [FEATURE_FLAGS.MARKETING_ANALYTICS_NEW_DASHBOARD, FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP],
+        featureFlags: [
+            FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING,
+            FEATURE_FLAGS.MARKETING_ANALYTICS_NEW_DASHBOARD,
+            FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP,
+        ],
     },
     decorators: [
         mswDecorator({
@@ -444,7 +448,11 @@ export function AdPerformanceWithoutSources(): JSX.Element {
 }
 AdPerformanceWithoutSources.parameters = {
     pageUrl: urls.marketingAnalyticsApp(),
-    featureFlags: [FEATURE_FLAGS.WEB_ANALYTICS_MARKETING, FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP],
+    featureFlags: [
+        FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING,
+        FEATURE_FLAGS.WEB_ANALYTICS_MARKETING,
+        FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP,
+    ],
 }
 AdPerformanceWithoutSources.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
     const canvas = within(canvasElement)
@@ -500,7 +508,11 @@ export function ManualSelectionWithSearchConsole(): JSX.Element {
     return <ManualSelection />
 }
 ManualSelectionWithSearchConsole.parameters = {
-    featureFlags: [FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS, FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP],
+    featureFlags: [
+        FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING,
+        FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS,
+        FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP,
+    ],
 }
 ManualSelectionWithSearchConsole.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
     const canvas = within(canvasElement)
@@ -517,6 +529,7 @@ export function DashboardWithSearchConsoleOnly(): JSX.Element {
 DashboardWithSearchConsoleOnly.parameters = {
     pageUrl: urls.marketingAnalyticsApp(),
     featureFlags: [
+        FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING,
         FEATURE_FLAGS.WEB_ANALYTICS_MARKETING,
         FEATURE_FLAGS.MARKETING_ANALYTICS_SETUP,
         FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS,
@@ -635,3 +648,53 @@ DashboardNoDetectionsWithSearch.play = async ({ canvasElement }: { canvasElement
     await expect(canvas.findByText('Choose an ad platform')).resolves.toBeVisible()
     await expect(canvas.findByText('Connect your search sources')).resolves.toBeVisible()
 }
+
+export function SourceOnboardingDisabledWithSearch(): JSX.Element {
+    return <AdPerformanceWithoutSources />
+}
+SourceOnboardingDisabledWithSearch.parameters = {
+    ...AdPerformanceWithoutSources.parameters,
+    featureFlags: [FEATURE_FLAGS.WEB_ANALYTICS_MARKETING, FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS],
+}
+SourceOnboardingDisabledWithSearch.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Connect your marketing sources')).resolves.toBeVisible()
+    await expect(canvas.findByText('Connect your search sources')).resolves.toBeVisible()
+    expect(canvas.queryByText('Choose an ad platform')).not.toBeInTheDocument()
+    expect(canvas.queryByText('Scan again')).not.toBeInTheDocument()
+    expect(canvas.queryByText('Could not check your events')).not.toBeInTheDocument()
+}
+
+export function SourceOnboardingAndSearchDisabled(): JSX.Element {
+    return <AdPerformanceWithoutSources />
+}
+SourceOnboardingAndSearchDisabled.parameters = {
+    ...AdPerformanceWithoutSources.parameters,
+    featureFlags: [FEATURE_FLAGS.WEB_ANALYTICS_MARKETING],
+}
+SourceOnboardingAndSearchDisabled.play = async ({ canvasElement }: { canvasElement: HTMLElement }): Promise<void> => {
+    const canvas = within(canvasElement)
+    await expect(canvas.findByText('Connect your marketing sources')).resolves.toBeVisible()
+    expect(canvas.queryByRole('heading', { name: 'Search performance' })).not.toBeInTheDocument()
+    expect(canvas.queryByText('Scan again')).not.toBeInTheDocument()
+}
+
+export function InitialOnboardingDisabledWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks()
+    const { resetOnboarding } = useActions(marketingOnboardingLogic)
+    useEffect(() => resetOnboarding(), [resetOnboarding])
+    return <MarketingAnalyticsScene />
+}
+InitialOnboardingDisabledWithSearch.parameters = SourceOnboardingDisabledWithSearch.parameters
+InitialOnboardingDisabledWithSearch.play = SourceOnboardingDisabledWithSearch.play
+
+export function NewDashboardOnboardingDisabledWithSearch(): JSX.Element {
+    useDashboardWithoutSourcesMocks()
+    const { resetOnboarding } = useActions(marketingOnboardingLogic)
+    useEffect(() => resetOnboarding(), [resetOnboarding])
+    return <NewMarketingAnalyticsDashboard />
+}
+NewDashboardOnboardingDisabledWithSearch.parameters = {
+    featureFlags: [FEATURE_FLAGS.MARKETING_ANALYTICS_NEW_DASHBOARD, FEATURE_FLAGS.MARKETING_ANALYTICS_ORGANIC_KEYWORDS],
+}
+NewDashboardOnboardingDisabledWithSearch.play = SourceOnboardingDisabledWithSearch.play

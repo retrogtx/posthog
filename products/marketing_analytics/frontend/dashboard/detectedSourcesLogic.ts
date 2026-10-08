@@ -1,5 +1,7 @@
 import { MakeLogicType, actions, afterMount, kea, key, path, props, reducers } from 'kea'
 
+import { FEATURE_FLAGS } from 'lib/constants'
+import { featureFlagLogic } from 'lib/logic/featureFlagLogic'
 import { marketingAnalyticsLogic } from 'scenes/web-analytics/tabs/marketing-analytics/frontend/logic/marketingAnalyticsLogic'
 import { setupPlanLogic } from 'scenes/web-analytics/tabs/marketing-analytics/frontend/logic/setupPlanLogic'
 
@@ -40,7 +42,12 @@ export const detectedSourcesLogic = kea<
         ],
     })),
     afterMount(({ props, cache }) => {
-        if (props.teamId && !setupPlanLogic.values.setupPlan && !setupPlanLogic.values.setupPlanLoading) {
+        if (
+            featureFlagLogic.values.featureFlags[FEATURE_FLAGS.MARKETING_ANALYTICS_SOURCE_ONBOARDING] &&
+            props.teamId &&
+            !setupPlanLogic.values.setupPlan &&
+            !setupPlanLogic.values.setupPlanLoading
+        ) {
             setupPlanLogic.actions.loadSetupPlan()
         }
         cache.disposables.add(() => {

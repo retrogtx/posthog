@@ -79,7 +79,10 @@ The initial source check shows separate loading states for Ad performance and Se
 Projects without sources show a connection card instead of empty metric placeholders.
 Search performance stays visible while the paid-source event scan runs, fails, or returns no platforms.
 Search performance remains behind `marketing-analytics-organic-keywords`.
-The read-only setup plan is available with `marketing-analytics`, `marketing-analytics-setup`, or `new-marketing-analytics-dashboard`; other setup operations keep their existing flag requirements.
+The paid-source onboarding and automatic dashboard scan are behind `marketing-analytics-source-onboarding`.
+Disabling this flag shows the manual source catalog and hides automatic detection controls without changing connected sources.
+Search onboarding stays independent under `marketing-analytics-organic-keywords`.
+The read-only setup plan is available with `marketing-analytics-source-onboarding`, `marketing-analytics-setup`, or `new-marketing-analytics-dashboard`; other setup operations keep their existing flag requirements.
 
 Source setup uses a consistent panel for connection checks, event scanning, suggestions, empty results, and recoverable errors.
 Detected platforms show concise evidence with expandable details.
